@@ -1,4 +1,6 @@
 console.log("Welcome");
+let endpoint = "cb2a466439754952a56da2f075700dfd";              // Update the endpoint, from crudcrud website in case the limit of 100 reaches
+
 
 // if user adds a note, add it to the server(crudecrude for now)
 let addBtn = document.getElementById('addBtn');
@@ -12,7 +14,7 @@ addBtn.addEventListener("click", function (e) {
     };
 
     axios    // Post data from textbox to server
-        .post('https://crudcrud.com/api/769f08c7f18e46289d1e15987c8e9b60/notesData', obj)
+        .post(`https://crudcrud.com/api/${endpoint}/notesData`, obj)
         .then(res => {
             console.log("Data has been posted to crudcrud");
             console.log(res);
@@ -29,31 +31,28 @@ addBtn.addEventListener("click", function (e) {
 
 function showNotes() {
     axios  
-        .get('https://crudcrud.com/api/769f08c7f18e46289d1e15987c8e9b60/notesData')
+        .get(`https://crudcrud.com/api/${endpoint}/notesData`)
         .then(res => {
             console.log(res);
-        
             if (notes == null) {
                 notesArr = [];
             } else {
                 notesArr = res.data;
             }
 
-
             let html = "";
             notesArr.forEach(function (element, index) {                                                           // Entry coming from localStorage
                 // Inplace of this.id, we can also use delete(${index}) directly
-                console.log(element._id);
                 html += `                                                                                   
                 <div class="noteCard my-2 mx-2 card" style="width: 18rem;">
-                    
                     <div class="card-body">
                         <h5 class="card-title">Note ${index + 1}</h5>
                         <p class="card-text">${element.addTxtValue}</p>
-                        <button id=${index} onclick="deleteNote(${element._id})" class="btn btn-primary">Delete Note</button>
+                        <button id=${index} onclick="deleteNote('${element._id}')" class="btn btn-primary">Delete Note</button>
                     </div>
                 </div>`;
-            });
+            });                                                                                                     // while passing parameter to onclick=deleteNode(), 
+                                                                                                                    // i was missing the (''), which is a Syntax error: Invalid token found                   
 
             let notesElm = document.getElementById("notes");                                                        // Pick element with id="notes", we will change its innerHTMl here
             if (notesArr.length != 0) {
@@ -61,21 +60,17 @@ function showNotes() {
             } else {
                 notesElm.innerHTML = `Nothing to show! Use "Add a Note" section above to add notes.`;
             }
-
-
         })
         .catch(err => {
             console.log("Error occured while getting data from server")
             console.log(err);
         })
-   
 }
 
 function deleteNote(idx){
     console.log('I am deleting', idx);
- 
     axios  
-        .delete(`https://crudcrud.com/api/769f08c7f18e46289d1e15987c8e9b60/notesData/${idx}`)
+        .delete(`https://crudcrud.com/api/${endpoint}/notesData/${idx}`)
         .then(res => {
             console.log(`Element with id: ${idx}, deleted`);
             showNotes();
