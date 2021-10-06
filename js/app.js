@@ -1,6 +1,6 @@
 console.log("Welcome");
-let endpoint = "cb2a466439754952a56da2f075700dfd";              // Update the endpoint, from crudcrud website in case the limit of 100 reaches
-
+let endpoint = "a94201914d9a47699c292203b47aa5e4";              // Update the endpoint, from crudcrud website in case the limit of 100 reaches
+                                                                // For reference: https://crudcrud.com/
 
 // if user adds a note, add it to the server(crudecrude for now)
 let addBtn = document.getElementById('addBtn');
@@ -25,7 +25,10 @@ addBtn.addEventListener("click", function (e) {
         })
 
     addTxt.value = "";                                              // It will remove the text form addTxt area after the addBtn is clicked
-    showNotes();
+    setTimeout(() => {
+        showNotes();
+    },100)
+    
 })
 
 
@@ -45,10 +48,13 @@ function showNotes() {
                 // Inplace of this.id, we can also use delete(${index}) directly
                 html += `                                                                                   
                 <div class="noteCard my-2 mx-2 card" style="width: 18rem;">
-                    <div class="card-body">
+                    <div class="card-body" id=${index}>
                         <h5 class="card-title">Note ${index + 1}</h5>
-                        <p class="card-text">${element.addTxtValue}</p>
-                        <button id=${index} onclick="deleteNote('${element._id}')" class="btn btn-primary">Delete Note</button>
+                        <div class="card-body-textbox">
+                            <p class="card-text">${element.addTxtValue}</p>
+                        </div>
+                        <button onclick="deleteNote('${element._id}')" class="btn btn-primary">Delete Note</button>
+                        <button onclick="editNote('${element._id}' ,'${index}')" class="btn btn-primary">Edit Note</button>
                     </div>
                 </div>`;
             });                                                                                                     // while passing parameter to onclick=deleteNode(), 
@@ -68,7 +74,7 @@ function showNotes() {
 }
 
 function deleteNote(idx){
-    console.log('I am deleting', idx);
+    console.log('I am deleting the note with _id: ', idx);
     axios  
         .delete(`https://crudcrud.com/api/${endpoint}/notesData/${idx}`)
         .then(res => {
@@ -82,8 +88,60 @@ function deleteNote(idx){
     showNotes();                                                                                            // call showNotes() so that the change can reflect on the website  
 }
 
+// function is called when button ("Edit Note") is clicked
+function editNote(elem_id, idx){
+    console.log('I am editing the note with _id: ');
+    console.log(parseInt(idx)+1);
+
+    let editnote = document.getElementById(parseInt(idx));
+    let html = `
+    <h5 class="card-title">Note ${parseInt(idx) + 1}</h5>
+    <div class="card-body-textbox">
+        <textarea class="form-control" id="updateTxtEdit" rows="3"></textarea>
+    </div>
+    <button onclick="deleteNote('${elem_id}')" class="btn btn-primary">Delete Note</button>
+    <button onclick="editDone('${elem_id}', '${parseInt(idx)}')" class="btn btn-primary"  id="updateBtn">Update</button>    
+    `;
+    editnote.innerHTML = html;
+}
+
+// function is called when button ("Edit-> Update") is clicked
+function editDone(elem_id, idx){
+    let updateNote = document.getElementById("updateTxtEdit");
+    let editnote = document.getElementById(parseInt(idx));
+    let html = `
+    <h5 class="card-title">Note ${parseInt(idx) + 1}</h5>
+    <div class="card-body-textbox">
+        <p class="card-text">${updateNote.value}</p>
+    </div>
+    <button onclick="deleteNote('${elem_id}')" class="btn btn-primary">Delete Note</button>
+    <button onclick="editNote('${elem_id}' ,'${parseInt(idx)}')" class="btn btn-primary">Edit Note</button>    
+    `;
+    console.log(editnote);
+    editnote.innerHTML = html;
+
+    // Updating the edit to server
+    let addTxtValue = updateNote.value;
+    const obj = { // Create object to be posted through axios
+        addTxtValue,
+    };
+
+    axios    // Post data from textbox to server
+        .put(`https://crudcrud.com/api/${endpoint}/notesData/${elem_id}`, obj)
+        .then(res => {
+            console.log("Data has been posted to crudcrud");
+            console.log(res);
+        })
+        .catch(err => {
+            console.log("Error Message: ");
+            console.log(res);
+        })
+
+}
 
 
+
+// Search to filter the notes based on text data
 let search = document.getElementById("searchTxt");
 search.addEventListener("input", function(){
     // This command stores the search value in a variable
